@@ -29,8 +29,8 @@ jobs:
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
             ~/Library/Caches/Homebrew/downloads/*--llvm-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
-          key: brew-1-${{ hashFiles('.github/brew-formulae') }}
-          restore-keys: brew-1-
+          key: brew-${{ hashFiles('.github/brew-formulae') }}
+          restore-keys: brew-
 
       - name: Environment preparation
         run: |
@@ -42,7 +42,6 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew install gnu-sed coreutils boost
-          brew upgrade llvm
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -91,7 +90,7 @@ jobs:
           gsed -i \
             -e 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' \
             -e '/-mllvm/d' \
-            -e '/-O3/-O2/g' \
+            -e 's/-O3/-O2/g' \
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$(gnproc) -f Makefile_MacOS
           make -C akochan -j$(gnproc) -f Makefile_MacOS
