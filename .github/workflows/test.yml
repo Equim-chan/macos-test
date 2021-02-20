@@ -41,7 +41,7 @@ jobs:
           git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
-          brew install gnu-sed coreutils boost tmate
+          brew install gnu-sed coreutils boost
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -114,8 +114,7 @@ jobs:
 
       - name: tmate session if tests fail
         if: failure()
-        run: |
-          tmate
+        uses: mxschmitt/action-tmate@v3
 
 #      - name: Compress report
 #        run: |
