@@ -105,7 +105,7 @@ jobs:
           cd akochan-reviewer
           target/release/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}" || true
           cd ../akochan
-          ./system.exe pipe_detailed ../akoochan-reviewer/tactics.json 0 < ../mjai.json || true
+          ./system.exe pipe_detailed ../akochan-reviewer/tactics.json 0 < ../mjai.json || true
 
 #      - name: Compress report
 #        run: |
