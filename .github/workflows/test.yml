@@ -81,10 +81,10 @@ jobs:
             ~/.cargo/git
             akochan-reviewer/target
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-2-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-2-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-2-
+            ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-3-
 
       - name: Build akochan
         run: |
@@ -106,6 +106,7 @@ jobs:
           cd akochan-reviewer
           target/release/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}" || true
           cd ../akochan
+          export OMP_NUM_THREADS=1
           ./system.exe pipe_detailed ../akochan-reviewer/tactics.json 0 < ../mjai.json || true
 
 #      - name: Compress report
