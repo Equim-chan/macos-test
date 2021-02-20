@@ -41,7 +41,7 @@ jobs:
           git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
-          brew install gnu-sed coreutils boost
+          brew install gnu-sed coreutils boost tmate
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -107,10 +107,15 @@ jobs:
         run: |
           source env.sh
           cd akochan-reviewer
-          target/debug/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}" || true
+          target/debug/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}"
           cd ../akochan
           export OMP_NUM_THREADS=1
-          ./system.exe pipe_detailed ../akochan-reviewer/tactics.json 0 < ../mjai.json || true
+          ./system.exe pipe_detailed ../akochan-reviewer/tactics.json 0 < ../mjai.json
+
+      - name: tmate session if tests fail
+        if: failure()
+        run: |
+          tmate
 
 #      - name: Compress report
 #        run: |
