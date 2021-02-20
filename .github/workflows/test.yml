@@ -72,7 +72,7 @@ jobs:
             -e '/-mllvm.*/d' \
             -e 's/-fopenmp/-Xpreprocessor -fopenmp/g' \
             -e '/LLVM_BASE =/d' \
-            -e 's@-L\$\(BOOST_BASE\)/lib@@g' \
+            -e 's@-L$(BOOST_BASE)/lib@@g' \
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$($NPROC) -f Makefile_MacOS
           make -C akochan -j$($NPROC) -f Makefile_MacOS
