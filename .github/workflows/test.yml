@@ -70,7 +70,7 @@ jobs:
             !akochan/**/*.h
             !akochan/**/Makefile*
           # change it manually when needed
-          key: ${{ runner.os }}-akochan-0-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
+          key: ${{ runner.os }}-akochan-1-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
 #       - name: Cache akochan-reviewer
 #         id: cache-akochan-reviewer
 #         uses: actions/cache@v2
@@ -88,7 +88,7 @@ jobs:
       - name: Build akochan
         run: |
           gsed -i \
-            -e 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' \
+            -e 's/CFLAGS =/CFLAGS = -march=native/' \
             -e '/-mllvm/d' \
             -e 's/-O3/-O2/g' \
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
