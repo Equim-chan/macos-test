@@ -1,5 +1,5 @@
 --- ai_src/tehai_ana.cpp	2021-02-21 04:57:52.003400800 +0800
-+++ ai_src/tehai_ana2.cpp	2021-02-21 03:28:15.183442500 +0800
++++ ai_src/tehai_ana.cpp	2021-02-21 03:28:15.183442500 +0800
 @@ -537,7 +537,7 @@ void Tehai_Analyzer_Basic::cut_tatu(cons
  				tps.tatu_hai.pop_back();
  				tps.tatu_hai.pop_back();
@@ -19,7 +19,7 @@
  				tehai_tmp[hai+2]--;
  				tps.tatu_hai.push_back(hai);
 --- ai_src/tehai_cal.cpp	2021-02-21 04:57:52.010398500 +0800
-+++ ai_src/tehai_cal2.cpp	2021-02-21 03:42:02.241330300 +0800
++++ ai_src/tehai_cal.cpp	2021-02-21 03:42:02.241330300 +0800
 @@ -816,15 +816,16 @@ void Tehai_Calculator::set_candidates3_m
  			tehai_calculator_work.candidates_work[cn].add_kakan(kakan_cand, ts_maps[cn], tehai_calculator_work.cal_tav_work, omp_get_thread_num());
  		}
