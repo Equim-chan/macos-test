@@ -16,18 +16,16 @@ jobs:
       - name: Update Homebrew
         run: |
           brew update --preinstall
-          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,llvm,boost}.rb > .github/brew-formulae
+          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,boost}.rb > .github/brew-formulae
       - name: Configure Homebrew cache
         uses: actions/cache@v2
         with:
           path: |
             ~/Library/Caches/Homebrew/gnu-sed--*
             ~/Library/Caches/Homebrew/coreutils--*
-            ~/Library/Caches/Homebrew/llvm--*
             ~/Library/Caches/Homebrew/boost--*
             ~/Library/Caches/Homebrew/downloads/*--gnu-sed-*
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
-            ~/Library/Caches/Homebrew/downloads/*--llvm-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
           key: brew-${{ hashFiles('.github/brew-formulae') }}
           restore-keys: brew-
@@ -70,27 +68,26 @@ jobs:
             !akochan/**/*.h
             !akochan/**/Makefile*
           # change it manually when needed
-          key: ${{ runner.os }}-akochan-1-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
-#       - name: Cache akochan-reviewer
-#         id: cache-akochan-reviewer
-#         uses: actions/cache@v2
-#         with:
-#           path: |
-#             ~/.cargo/registry
-#             ~/.cargo/git
-#             akochan-reviewer/target
-#           # change it manually when needed
-#           key: ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
-#           restore-keys: |
-#             ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-
-#             ${{ runner.os }}-cargo-3-
+          key: ${{ runner.os }}-akochan-2-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
+      - name: Cache akochan-reviewer
+        id: cache-akochan-reviewer
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            akochan-reviewer/target
+          # change it manually when needed
+          key: ${{ runner.os }}-cargo-4-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-4-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-4-
 
       - name: Build akochan
         run: |
           gsed -i \
-            -e 's/CFLAGS =/CFLAGS = -march=native/' \
+            -e 's/CFLAGS =/CFLAGS = -ffast-math/' \
             -e '/-mllvm/d' \
-            -e 's/-O3/-O2/g' \
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$(gnproc) -f Makefile_MacOS
           make -C akochan -j$(gnproc) -f Makefile_MacOS
@@ -101,37 +98,30 @@ jobs:
           RUSTFLAGS: -C target-cpu=native
         run: |
           cd akochan-reviewer
-          cargo build
+          cargo build --release
 
       - name: Run akochan-reviewer
         run: |
           source env.sh
           cd akochan-reviewer
-          target/debug/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}"
-          cd ../akochan
-          export OMP_NUM_THREADS=1
-          ./system.exe pipe_detailed ../akochan-reviewer/tactics.json 0 < ../mjai.json
+          target/release/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}"
 
-      - name: tmate session if tests fail
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
+      - name: Compress report
+        run: |
+          source env.sh
+          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+            --collapse-whitespace \
+            --collapse-boolean-attributes \
+            --remove-optional-tags \
+            --remove-redundant-attributes \
+            --remove-script-type-attributes \
+            --remove-attribute-quotes \
+            --use-short-doctype \
+            --minify-css true \
+            --sort-attributes \
+            --sort-class-name \
+            report.html
 
-#      - name: Compress report
-#        run: |
-#          source env.sh
-#          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-#            --collapse-whitespace \
-#            --collapse-boolean-attributes \
-#            --remove-optional-tags \
-#            --remove-redundant-attributes \
-#            --remove-script-type-attributes \
-#            --remove-attribute-quotes \
-#            --use-short-doctype \
-#            --minify-css true \
-#            --sort-attributes \
-#            --sort-class-name \
-#            report.html
-#
-#      - name: Publish report
-#        run: |
-#          echo DONE
+      - name: Publish report
+        run: |
+          echo DONE
