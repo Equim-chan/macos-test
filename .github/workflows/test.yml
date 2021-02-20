@@ -24,7 +24,7 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew update
-          brew install llvm boost gnu-sed coreutils
+          brew install gnu-sed coreutils llvm libomp boost
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -79,9 +79,12 @@ jobs:
       - name: Run akochan-reviewer
         run: |
           source env.sh
-          export OMP_NUM_THREADS=$($NPROC)
           cd akochan-reviewer
           target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+          if [[ $? -ne 0 ]]; then
+              export OMP_NUM_THREADS=$($NPROC)
+              target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+          fi
 
       - name: Compress report
         run: |
