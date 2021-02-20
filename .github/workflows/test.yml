@@ -19,7 +19,7 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew update
-          brew install llvm boost
+          brew install llvm boost sed
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -60,7 +60,7 @@ jobs:
 
       - name: Build akochan
         run: |
-          sed -i 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
+          /usr/local/opt/gnu-sed/libexec/gnubin/sed -i 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$(nproc) -f Makefile_MacOS
           make -C akochan -j$(nproc) -f Makefile_MacOS
 
