@@ -1,0 +1,101 @@
+name: Summon Akochan
+
+on:
+  push:
+    paths:
+      - 'env.sh'
+      - '.github/**'
+
+jobs:
+  run:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Environment preparation
+        run: |
+          set -x
+
+          git clone --depth=1 https://github.com/critter-mj/akochan.git
+          git --git-dir=akochan/.git rev-parse --short HEAD | tee AKOCHAN_VER
+          git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
+          git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
+
+          brew update
+          brew install llvm boost
+
+          rustup toolchain update --no-self-update stable
+          rustup default stable
+          rustup show
+
+          node --version
+          yarn --version
+          yarn global add html-minifier
+
+          sysctl -a | grep machdep.cpu
+          vm_stat
+
+          rustc --version | tee RUSTC_VER
+          "$(brew --prefix llvm)"/bin/clang++ -E - -march=native -###
+          nproc | tee NPROC
+
+      - name: Cache akochan
+        id: cache-akochan
+        uses: actions/cache@v2
+        with:
+          path: |
+            akochan/**/*.o
+          # change it manually when needed
+          key: ${{ runner.os }}-akochan-0-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
+      - name: Cache akochan-reviewer
+        id: cache-akochan-reviewer
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            akochan-reviewer/target
+          # change it manually when needed
+          key: ${{ runner.os }}-cargo-0-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-0-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-0-
+
+      - name: Build akochan
+        run: |
+          sed -i 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
+          make -C akochan/ai_src -j$(nproc) -f Makefile_MacOS
+          make -C akochan -j$(nproc) -f Makefile_MacOS
+
+      - name: Build akochan-reviewer
+        env:
+          RUSTFLAGS: -C target-cpu=native
+        run: |
+          cd akochan-reviewer
+          cargo build --release
+
+      - name: Run akochan-reviewer
+        run: |
+          source env.sh
+          cd akochan-reviewer
+          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+
+      - name: Compress report
+        run: |
+          source env.sh
+          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+            --collapse-whitespace \
+            --collapse-boolean-attributes \
+            --remove-optional-tags \
+            --remove-redundant-attributes \
+            --remove-script-type-attributes \
+            --remove-attribute-quotes \
+            --use-short-doctype \
+            --minify-css true \
+            --sort-attributes \
+            --sort-class-name \
+            report.html
+
+      - name: Publish report
+        run: |
+          echo DONE
