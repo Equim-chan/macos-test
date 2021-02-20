@@ -19,7 +19,7 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew update
-          brew install llvm boost gnu-sed
+          brew install llvm boost gnu-sed coreutils
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -34,7 +34,7 @@ jobs:
 
           rustc --version | tee RUSTC_VER
           "$(brew --prefix llvm)"/bin/clang++ -E - -march=native -###
-          nproc | tee NPROC
+          /usr/local/opt/coreutils/libexec/gnubin/nproc | tee NPROC
 
       - name: Cache akochan
         id: cache-akochan
@@ -61,8 +61,8 @@ jobs:
       - name: Build akochan
         run: |
           /usr/local/opt/gnu-sed/libexec/gnubin/sed -i 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
-          make -C akochan/ai_src -j$(nproc) -f Makefile_MacOS
-          make -C akochan -j$(nproc) -f Makefile_MacOS
+          make -C akochan/ai_src -j$(/usr/local/opt/coreutils/libexec/gnubin/nproc) -f Makefile_MacOS
+          make -C akochan -j$(/usr/local/opt/coreutils/libexec/gnubin/nproc) -f Makefile_MacOS
 
       - name: Build akochan-reviewer
         env:
@@ -74,7 +74,7 @@ jobs:
       - name: Run akochan-reviewer
         run: |
           source env.sh
-          export OMP_NUM_THREADS=$(nproc)
+          export OMP_NUM_THREADS=$(/usr/local/opt/coreutils/libexec/gnubin/nproc)
           cd akochan-reviewer
           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
