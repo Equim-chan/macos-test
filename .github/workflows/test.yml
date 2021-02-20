@@ -4,7 +4,6 @@ on:
   - push
 
 env:
-  CLANGPP: /usr/local/opt/llvm/bin/clang++
   HOMEBREW_NO_AUTO_UPDATE: '1'
 
 jobs:
@@ -53,7 +52,7 @@ jobs:
           vm_stat
 
           rustc --version | tee RUSTC_VER
-          $CLANGPP -E - -march=native -###
+          /usr/local/opt/llvm/bin/clang++ -E - -march=native -###
           gnproc | tee NPROC
 
       - name: Cache akochan
@@ -124,5 +123,8 @@ jobs:
             report.html
 
       - name: Publish report
+        env:
+          ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
         run: |
-          echo DONE
+          source env.sh
+          curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
