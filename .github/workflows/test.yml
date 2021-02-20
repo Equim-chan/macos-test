@@ -24,7 +24,8 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew update
-          brew install gnu-sed coreutils llvm libomp boost
+          brew upgrade llvm
+          brew install gnu-sed coreutils libomp boost
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -84,22 +85,22 @@ jobs:
           export OMP_NUM_THREADS=$($NPROC)
           target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}" || true
 
-      - name: Compress report
-        run: |
-          source env.sh
-          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-            --collapse-whitespace \
-            --collapse-boolean-attributes \
-            --remove-optional-tags \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --remove-attribute-quotes \
-            --use-short-doctype \
-            --minify-css true \
-            --sort-attributes \
-            --sort-class-name \
-            report.html
-
-      - name: Publish report
-        run: |
-          echo DONE
+#      - name: Compress report
+#        run: |
+#          source env.sh
+#          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+#            --collapse-whitespace \
+#            --collapse-boolean-attributes \
+#            --remove-optional-tags \
+#            --remove-redundant-attributes \
+#            --remove-script-type-attributes \
+#            --remove-attribute-quotes \
+#            --use-short-doctype \
+#            --minify-css true \
+#            --sort-attributes \
+#            --sort-class-name \
+#            report.html
+#
+#      - name: Publish report
+#        run: |
+#          echo DONE
