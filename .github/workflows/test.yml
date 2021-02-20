@@ -41,7 +41,8 @@ jobs:
           git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
-          brew install gnu-sed coreutils llvm boost
+          brew install gnu-sed coreutils boost
+          brew update llvm
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -80,10 +81,10 @@ jobs:
             ~/.cargo/git
             akochan-reviewer/target
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-1-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-1-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-1-
+            ${{ runner.os }}-cargo-2-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-2-
 
       - name: Build akochan
         run: |
