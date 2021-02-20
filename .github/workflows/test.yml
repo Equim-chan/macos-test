@@ -1,10 +1,7 @@
 name: Summon Akochan
 
 on:
-  push:
-    paths:
-      - 'env.sh'
-      - '.github/**'
+  - push
 
 jobs:
   run:
