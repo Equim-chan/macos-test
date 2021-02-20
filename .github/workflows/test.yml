@@ -6,7 +6,7 @@ on:
 env:
   NPROC: /usr/local/opt/coreutils/libexec/gnubin/nproc
   SED: /usr/local/opt/gnu-sed/libexec/gnubin/sed
-  CLANGPP: /usr/local/opt/llvm/bin/clang++
+  CLANGPP: clang++ # /usr/local/opt/llvm/bin/clang++
 
 jobs:
   run:
@@ -24,8 +24,8 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew update
-          brew upgrade llvm
-          brew install gnu-sed coreutils libomp boost
+          # brew upgrade llvm
+          brew install gnu-sed coreutils boost libomp
 
           rustup toolchain update --no-self-update stable
           rustup default stable
@@ -49,7 +49,7 @@ jobs:
           path: |
             akochan/**/*.o
           # change it manually when needed
-          key: ${{ runner.os }}-akochan-0-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
+          key: ${{ runner.os }}-akochan-1-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
       - name: Cache akochan-reviewer
         id: cache-akochan-reviewer
         uses: actions/cache@v2
@@ -66,9 +66,17 @@ jobs:
 
       - name: Build akochan
         run: |
-          $SED -i 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
+          $SED -i \
+            -e 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' \
+            -e 's/COMPILER =/COMPILER = /usr/bin/clang++'
+            -e '/-mllvm.*/d' \
+            -e 's/-fopenmp/-Xpreprocessor -fopenmp/g' \
+            -e '/LLVM_BASE =/d' \
+            -e 's@-L\$\(BOOST_BASE\)/lib@@g' \
+            akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$($NPROC) -f Makefile_MacOS
           make -C akochan -j$($NPROC) -f Makefile_MacOS
+          otool -L akochan/{system.exe,libai.so}
 
       - name: Build akochan-reviewer
         env:
