@@ -6,7 +6,7 @@ on:
 env:
   NPROC: /usr/local/opt/coreutils/libexec/gnubin/nproc
   SED: /usr/local/opt/gnu-sed/libexec/gnubin/sed
-  CLANGPP: clang++ # /usr/local/opt/llvm/bin/clang++
+  CLANGPP: /usr/local/opt/llvm/bin/clang++
 
 jobs:
   run:
