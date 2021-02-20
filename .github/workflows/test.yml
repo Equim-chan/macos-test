@@ -29,8 +29,8 @@ jobs:
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
             ~/Library/Caches/Homebrew/downloads/*--llvm-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
-          key: brew-${{ hashFiles('.github/brew-formulae') }}
-          restore-keys: brew-
+          key: brew-1-${{ hashFiles('.github/brew-formulae') }}
+          restore-keys: brew-1-
 
       - name: Environment preparation
         run: |
@@ -72,23 +72,27 @@ jobs:
             !akochan/**/Makefile*
           # change it manually when needed
           key: ${{ runner.os }}-akochan-0-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
-      - name: Cache akochan-reviewer
-        id: cache-akochan-reviewer
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            akochan-reviewer/target
-          # change it manually when needed
-          key: ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-3-
+#       - name: Cache akochan-reviewer
+#         id: cache-akochan-reviewer
+#         uses: actions/cache@v2
+#         with:
+#           path: |
+#             ~/.cargo/registry
+#             ~/.cargo/git
+#             akochan-reviewer/target
+#           # change it manually when needed
+#           key: ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+#           restore-keys: |
+#             ${{ runner.os }}-cargo-3-${{ hashFiles('RUSTC_VER') }}-
+#             ${{ runner.os }}-cargo-3-
 
       - name: Build akochan
         run: |
-          gsed -i 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
+          gsed -i \
+            -e 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' \
+            -e '/-mllvm/d' \
+            -e '/-O3/-O2/g' \
+            akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$(gnproc) -f Makefile_MacOS
           make -C akochan -j$(gnproc) -f Makefile_MacOS
           otool -L akochan/{system.exe,libai.so}
@@ -98,13 +102,13 @@ jobs:
           RUSTFLAGS: -C target-cpu=native
         run: |
           cd akochan-reviewer
-          cargo build --release
+          cargo build
 
       - name: Run akochan-reviewer
         run: |
           source env.sh
           cd akochan-reviewer
-          target/release/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}" || true
+          target/debug/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}" || true
           cd ../akochan
           export OMP_NUM_THREADS=1
           ./system.exe pipe_detailed ../akochan-reviewer/tactics.json 0 < ../mjai.json || true
