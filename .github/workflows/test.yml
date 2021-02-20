@@ -105,7 +105,7 @@ jobs:
         run: |
           source env.sh
           cd akochan-reviewer
-          target/release/akochan-reviewer --no-review --mjai-out ../mjai.json --no-open "${ARGS[@]}"
+          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
       - name: Compress report
         run: |
