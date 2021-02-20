@@ -78,18 +78,11 @@ jobs:
 
       - name: Run akochan-reviewer
         run: |
-          cd akochan
-          ./system.exe mjai_log haifu_log_sample.json 2 || true
-          env OMP_NUM_THREADS=$($NPROC) ./system.exe mjai_log haifu_log_sample.json 2 || true
-          cd ..
-
           source env.sh
           cd akochan-reviewer
-          target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
-          if [[ $? -ne 0 ]]; then
-              export OMP_NUM_THREADS=$($NPROC)
-              target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
-          fi
+          target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}" || true
+          export OMP_NUM_THREADS=$($NPROC)
+          target/release/akochan-reviewer -v -d ../akochan --no-open -o ../report.html "${ARGS[@]}" || true
 
       - name: Compress report
         run: |
