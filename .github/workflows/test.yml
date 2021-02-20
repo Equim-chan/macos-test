@@ -42,7 +42,7 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
 
           brew install gnu-sed coreutils boost
-          brew update llvm
+          brew upgrade llvm
 
           rustup toolchain update --no-self-update stable
           rustup default stable
