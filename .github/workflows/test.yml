@@ -85,7 +85,7 @@ jobs:
 
       - name: Build akochan
         run: |
-          patch -d akochan --strip=1 < a.patch
+          patch -d akochan --strip=0 < a.patch
           gsed -i \
             -e 's/CFLAGS =/CFLAGS = -ffast-math/' \
             -e '/-mllvm/d' \
