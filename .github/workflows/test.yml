@@ -70,7 +70,7 @@ jobs:
             -e 's/CFLAGS =/CFLAGS = -march=native -ffast-math/' \
             -e 's@COMPILER =.*@COMPILER = /usr/bin/clang++@'
             -e '/-mllvm.*/d' \
-            -e 's@-fopenmp/-Xpreprocessor -fopenmp -L$(LIBOMP_BASE)/include@g' \
+            -e 's@-fopenmp/-Xpreprocessor -fopenmp -I$(LIBOMP_BASE)/include@g' \
             -e 's/LLVM_BASE =.*/LIBOMP_BASE = $(shell brew --prefix libomp)/' \
             -e 's@-L$(LLVM_BASE)/lib@-L$(LIBOMP_BASE)/lib@g' \
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
