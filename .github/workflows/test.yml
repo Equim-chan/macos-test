@@ -67,8 +67,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            .cargo/registry
+            .cargo/git
             akochan-reviewer/target
           # change it manually when needed
           key: ${{ runner.os }}-cargo-4-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
@@ -77,6 +77,7 @@ jobs:
             ${{ runner.os }}-cargo-4-
 
       - name: Build akochan
+        if: steps.cache-akochan.outputs.cache-hit != 'true'
         run: |
           patch -d akochan --strip=0 < a.patch
           gsed -i \
