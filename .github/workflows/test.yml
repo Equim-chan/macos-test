@@ -71,10 +71,10 @@ jobs:
             ~/.cargo/git
             akochan-reviewer/target
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-4-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-5-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-4-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-4-
+            ${{ runner.os }}-cargo-5-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-5-
 
       - name: Build akochan
         if: steps.cache-akochan.outputs.cache-hit != 'true'
