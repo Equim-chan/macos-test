@@ -59,7 +59,7 @@ jobs:
         id: cache-akochan
         uses: actions/cache@v2
         with:
-          path: akochan/**/obj/**
+          path: akochan
           # change it manually when needed
           key: ${{ runner.os }}-akochan-2-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
       - name: Cache akochan-reviewer
