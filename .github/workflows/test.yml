@@ -5,6 +5,7 @@ on:
 
 env:
   HOMEBREW_NO_AUTO_UPDATE: '1'
+  CARGO_HOME: '~/new-cargo'
 
 jobs:
   run:
@@ -40,8 +41,6 @@ jobs:
 
           brew install gnu-sed coreutils boost
 
-          echo $CARGO_HOME
-          export CARGO_HOME=~/new-cargo
           rustup toolchain update --no-self-update stable
           rustup default stable
           rustup show
