@@ -40,9 +40,12 @@ jobs:
 
           brew install gnu-sed coreutils boost
 
+          echo $CARGO_HOME
+          export CARGO_HOME=~/new-cargo
           rustup toolchain update --no-self-update stable
           rustup default stable
           rustup show
+          
 
           node --version
           yarn --version
@@ -67,14 +70,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/new-cargo/registry
+            ~/new-cargo/git
             akochan-reviewer/target
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-5-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-6-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-5-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-5-
+            ${{ runner.os }}-cargo-6-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-6-
 
       - name: Build akochan
         if: steps.cache-akochan.outputs.cache-hit != 'true'
