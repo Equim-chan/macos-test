@@ -5,7 +5,6 @@ on:
 
 env:
   HOMEBREW_NO_AUTO_UPDATE: '1'
-  CARGO_HOME: '~/new-cargo'
 
 jobs:
   run:
@@ -37,14 +36,13 @@ jobs:
           git clone --depth=1 https://github.com/critter-mj/akochan.git
           git --git-dir=akochan/.git rev-parse --short HEAD | tee AKOCHAN_VER
           git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
-          git --git-dir=akochan-reviewer/.git rev-parse --short HEAD
+          git --git-dir=akochan-reviewer/.git rev-parse --short HEAD | tee REVIEWER_VER
 
           brew install gnu-sed coreutils boost
 
           rustup toolchain update --no-self-update stable
           rustup default stable
           rustup show
-          
 
           node --version
           yarn --version
@@ -63,20 +61,17 @@ jobs:
         with:
           path: akochan
           # change it manually when needed
-          key: ${{ runner.os }}-akochan-2-${{ hashFiles('NPROC') }}-${{ hashFiles('AKOCHAN_VER') }}
+          key: ${{ runner.os }}-akochan-3-${{ hashFiles('NPROC', 'AKOCHAN_VER') }}
       - name: Cache akochan-reviewer
         id: cache-akochan-reviewer
         uses: actions/cache@v2
         with:
-          path: |
-            ~/new-cargo/registry
-            ~/new-cargo/git
-            akochan-reviewer/target
+          path: akochan-reviewer/target
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-6-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-7-${{ hashFiles('RUSTC_VER', 'akochan-reviewer/**/Cargo.lock', 'REVIEWER_VER') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-6-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-6-
+            ${{ runner.os }}-cargo-7-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-7-
 
       - name: Build akochan
         if: steps.cache-akochan.outputs.cache-hit != 'true'
@@ -91,37 +86,38 @@ jobs:
           otool -L akochan/{system.exe,libai.so}
 
       - name: Build akochan-reviewer
+        if: steps.cache-akochan-reviewer.outputs.cache-hit != 'true'
         env:
           RUSTFLAGS: -C target-cpu=native
         run: |
           cd akochan-reviewer
           cargo build --release
 
-      - name: Run akochan-reviewer
-        run: |
-          source env.sh
-          cd akochan-reviewer
-          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+#       - name: Run akochan-reviewer
+#         run: |
+#           source env.sh
+#           cd akochan-reviewer
+#           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
-      - name: Compress report
-        run: |
-          source env.sh
-          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-            --collapse-whitespace \
-            --collapse-boolean-attributes \
-            --remove-optional-tags \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --remove-attribute-quotes \
-            --use-short-doctype \
-            --minify-css true \
-            --sort-attributes \
-            --sort-class-name \
-            report.html
+#       - name: Compress report
+#         run: |
+#           source env.sh
+#           "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+#             --collapse-whitespace \
+#             --collapse-boolean-attributes \
+#             --remove-optional-tags \
+#             --remove-redundant-attributes \
+#             --remove-script-type-attributes \
+#             --remove-attribute-quotes \
+#             --use-short-doctype \
+#             --minify-css true \
+#             --sort-attributes \
+#             --sort-class-name \
+#             report.html
 
-      - name: Publish report
-        env:
-          ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
-        run: |
-          source env.sh
-          curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
+#       - name: Publish report
+#         env:
+#           ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
+#         run: |
+#           source env.sh
+#           curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
