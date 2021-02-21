@@ -72,7 +72,7 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-8-${{ hashFiles('RUSTC_VER', 'akochan-reviewer/**/Cargo.lock', 'REVIEWER_VER') }}
+          key: ${{ runner.os }}-cargo-8-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-8-${{ hashFiles('RUSTC_VER') }}-
             ${{ runner.os }}-cargo-8-
@@ -98,11 +98,11 @@ jobs:
           cargo build --release
           otool -L target/release/akochan-reviewer
 
-      - name: Run akochan-reviewer
-        run: |
-          source env.sh
-          cd akochan-reviewer
-          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+#       - name: Run akochan-reviewer
+#         run: |
+#           source env.sh
+#           cd akochan-reviewer
+#           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
 #       - name: Compress report
 #         run: |
