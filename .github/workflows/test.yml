@@ -15,18 +15,18 @@ jobs:
       - name: Update Homebrew
         run: |
           brew update --preinstall
-          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,tar,boost}.rb > .github/brew-formulae
+          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,gnu-tar,coreutils,boost}.rb > .github/brew-formulae
       - name: Configure Homebrew cache
         uses: actions/cache@v2
         with:
           path: |
             ~/Library/Caches/Homebrew/gnu-sed--*
+            ~/Library/Caches/Homebrew/gnu-tar--*
             ~/Library/Caches/Homebrew/coreutils--*
-            ~/Library/Caches/Homebrew/tar--*
             ~/Library/Caches/Homebrew/boost--*
             ~/Library/Caches/Homebrew/downloads/*--gnu-sed-*
+            ~/Library/Caches/Homebrew/downloads/*--gnu-tar-*
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
-            ~/Library/Caches/Homebrew/downloads/*--tar-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
           key: brew-${{ hashFiles('.github/brew-formulae') }}
           restore-keys: brew-
@@ -49,7 +49,7 @@ jobs:
           git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD | tee REVIEWER_VER
 
-          brew install gnu-sed coreutils tar boost
+          brew install gnu-sed gnu-tar coreutils boost
 
           node --version
           yarn --version
