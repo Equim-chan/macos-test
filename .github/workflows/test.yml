@@ -29,15 +29,6 @@ jobs:
           key: brew-${{ hashFiles('.github/brew-formulae') }}
           restore-keys: brew-
 
-      - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
-          default: true
-          toolchain: stable
-          target: x86_64-apple-darwin
-
       - name: Environment preparation
         run: |
           set -x
