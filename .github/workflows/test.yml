@@ -15,7 +15,7 @@ jobs:
       - name: Update Homebrew
         run: |
           brew update --preinstall
-          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,boost}.rb > .github/brew-formulae
+          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,boost,llvm}.rb > .github/brew-formulae
       - name: Configure Homebrew cache
         uses: actions/cache@v2
         with:
@@ -23,9 +23,11 @@ jobs:
             ~/Library/Caches/Homebrew/gnu-sed--*
             ~/Library/Caches/Homebrew/coreutils--*
             ~/Library/Caches/Homebrew/boost--*
+            ~/Library/Caches/Homebrew/llvm--*
             ~/Library/Caches/Homebrew/downloads/*--gnu-sed-*
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
+            ~/Library/Caches/Homebrew/downloads/*--llvm-*
           key: brew-${{ hashFiles('.github/brew-formulae') }}
           restore-keys: brew-
 
@@ -39,6 +41,7 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD | tee REVIEWER_VER
 
           brew install gnu-sed coreutils boost
+          brew upgrade llvm
 
           node --version
           yarn --version
@@ -53,8 +56,9 @@ jobs:
 
           rustc --version | tee RUSTC_VER
           /usr/local/opt/llvm/bin/clang | tee CLANG_VER
-          /usr/local/opt/llvm/bin/clang++ -E - -march=native -###
           gnproc | tee NPROC
+
+          /usr/local/opt/llvm/bin/clang++ -E - -march=native -###
 
       - name: Cache akochan
         id: cache-akochan
@@ -103,31 +107,31 @@ jobs:
       # flushing the disk cache seems to work, too.
       - run: sudo purge
 
-      - name: Run akochan-reviewer
-        run: |
-          source env.sh
-          cd akochan-reviewer
-          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+#       - name: Run akochan-reviewer
+#         run: |
+#           source env.sh
+#           cd akochan-reviewer
+#           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
-      - name: Compress report
-        run: |
-          source env.sh
-          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-            --collapse-whitespace \
-            --collapse-boolean-attributes \
-            --remove-optional-tags \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --remove-attribute-quotes \
-            --use-short-doctype \
-            --minify-css true \
-            --sort-attributes \
-            --sort-class-name \
-            report.html
+#       - name: Compress report
+#         run: |
+#           source env.sh
+#           "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+#             --collapse-whitespace \
+#             --collapse-boolean-attributes \
+#             --remove-optional-tags \
+#             --remove-redundant-attributes \
+#             --remove-script-type-attributes \
+#             --remove-attribute-quotes \
+#             --use-short-doctype \
+#             --minify-css true \
+#             --sort-attributes \
+#             --sort-class-name \
+#             report.html
 
-      - name: Publish report
-        env:
-          ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
-        run: |
-          source env.sh
-          curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
+#       - name: Publish report
+#         env:
+#           ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
+#         run: |
+#           source env.sh
+#           curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
