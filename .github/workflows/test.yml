@@ -51,10 +51,6 @@ jobs:
           rustup default stable
           rustup show
 
-          # macos tar is buggy and will cause problem for cache
-          sudo rm /usr/bin/tar
-          sudo ln -sf /usr/local/opt/gnu-tar/libexec/gnubin/tar /usr/bin/tar
-
           rustc --version | tee RUSTC_VER
           /usr/local/opt/llvm/bin/clang++ -E - -march=native -###
           gnproc | tee NPROC
@@ -99,6 +95,13 @@ jobs:
         run: |
           cd akochan-reviewer
           cargo build --release
+
+      # There is a bug with BSD tar on macOS where the first 8MB of the file are
+      # sometimes all NUL bytes. See https://github.com/actions/cache/issues/403
+      # and https://github.com/rust-lang/cargo/issues/8603 for some more
+      # information. An alternative solution here is to install GNU tar, but
+      # flushing the disk cache seems to work, too.
+      - run: sudo purge
 
 #       - name: Run akochan-reviewer
 #         run: |
