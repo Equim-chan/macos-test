@@ -102,36 +102,35 @@ jobs:
         run: |
           cd akochan-reviewer
           cargo build --release
+          file target/release/akochan-reviewer
+          du -s target/release/akochan-reviewer
+          otool -L target/release/akochan-reviewer
 
       - name: Run akochan-reviewer
         run: |
           source env.sh
           cd akochan-reviewer
-          file target/release/akochan-reviewer
-          du -s target/release/akochan-reviewer
-          otool -L target/release/akochan-reviewer
+          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
-          # target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+      - name: Compress report
+        run: |
+          source env.sh
+          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+            --collapse-whitespace \
+            --collapse-boolean-attributes \
+            --remove-optional-tags \
+            --remove-redundant-attributes \
+            --remove-script-type-attributes \
+            --remove-attribute-quotes \
+            --use-short-doctype \
+            --minify-css true \
+            --sort-attributes \
+            --sort-class-name \
+            report.html
 
-#       - name: Compress report
-#         run: |
-#           source env.sh
-#           "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-#             --collapse-whitespace \
-#             --collapse-boolean-attributes \
-#             --remove-optional-tags \
-#             --remove-redundant-attributes \
-#             --remove-script-type-attributes \
-#             --remove-attribute-quotes \
-#             --use-short-doctype \
-#             --minify-css true \
-#             --sort-attributes \
-#             --sort-class-name \
-#             report.html
-
-#       - name: Publish report
-#         env:
-#           ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
-#         run: |
-#           source env.sh
-#           curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
+      - name: Publish report
+        env:
+          ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
+        run: |
+          source env.sh
+          curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
