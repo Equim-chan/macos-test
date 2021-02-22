@@ -66,16 +66,12 @@ jobs:
         id: cache-akochan-reviewer
         uses: actions/cache@v2
         with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
+          path: akochan-reviewer/target
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-8-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-8-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-8-
+          key: ${{ runner.os }}-cargo-9-${{ hashFiles('RUSTC_VER', 'akochan-reviewer/**/Cargo.lock', 'REVIEWER_VER') }}
+#           restore-keys: |
+#             ${{ runner.os }}-cargo-9-${{ hashFiles('RUSTC_VER') }}-
+#             ${{ runner.os }}-cargo-9-
 
       - name: Build akochan
         if: steps.cache-akochan.outputs.cache-hit != 'true'
@@ -90,39 +86,39 @@ jobs:
           otool -L akochan/{system.exe,libai.so}
 
       - name: Build akochan-reviewer
-        # if: steps.cache-akochan-reviewer.outputs.cache-hit != 'true'
-        env:
-          RUSTFLAGS: -C target-cpu=native
+        if: steps.cache-akochan-reviewer.outputs.cache-hit != 'true'
+#         env:
+#           RUSTFLAGS: -C target-cpu=native
         run: |
           cd akochan-reviewer
           cargo build --release
           otool -L target/release/akochan-reviewer
 
-      - name: Run akochan-reviewer
-        run: |
-          source env.sh
-          cd akochan-reviewer
-          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+#       - name: Run akochan-reviewer
+#         run: |
+#           source env.sh
+#           cd akochan-reviewer
+#           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
-      - name: Compress report
-        run: |
-          source env.sh
-          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-            --collapse-whitespace \
-            --collapse-boolean-attributes \
-            --remove-optional-tags \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --remove-attribute-quotes \
-            --use-short-doctype \
-            --minify-css true \
-            --sort-attributes \
-            --sort-class-name \
-            report.html
+#       - name: Compress report
+#         run: |
+#           source env.sh
+#           "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+#             --collapse-whitespace \
+#             --collapse-boolean-attributes \
+#             --remove-optional-tags \
+#             --remove-redundant-attributes \
+#             --remove-script-type-attributes \
+#             --remove-attribute-quotes \
+#             --use-short-doctype \
+#             --minify-css true \
+#             --sort-attributes \
+#             --sort-class-name \
+#             report.html
 
-      - name: Publish report
-        env:
-          ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
-        run: |
-          source env.sh
-          curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
+#       - name: Publish report
+#         env:
+#           ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
+#         run: |
+#           source env.sh
+#           curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
