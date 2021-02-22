@@ -52,6 +52,7 @@ jobs:
           rustup show
 
           rustc --version | tee RUSTC_VER
+          /usr/local/opt/llvm/bin/clang | tee CLANG_VER
           /usr/local/opt/llvm/bin/clang++ -E - -march=native -###
           gnproc | tee NPROC
 
@@ -61,7 +62,7 @@ jobs:
         with:
           path: akochan
           # change it manually when needed
-          key: ${{ runner.os }}-akochan-4-${{ hashFiles('NPROC', 'AKOCHAN_VER') }}
+          key: ${{ runner.os }}-akochan-5-${{ hashFiles('NPROC', 'CLANG_VER', 'AKOCHAN_VER') }}
       - name: Cache akochan-reviewer
         id: cache-akochan-reviewer
         uses: actions/cache@v2
@@ -84,7 +85,6 @@ jobs:
           patch -d akochan --strip=0 < a.patch
           gsed -i \
             -e 's/CFLAGS =/CFLAGS = -ffast-math/' \
-            -e '/-mllvm/d' \
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$(gnproc) -f Makefile_MacOS
           make -C akochan -j$(gnproc) -f Makefile_MacOS
