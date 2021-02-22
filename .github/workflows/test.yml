@@ -15,7 +15,7 @@ jobs:
       - name: Update Homebrew
         run: |
           brew update --preinstall
-          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,boost,llvm}.rb > .github/brew-formulae
+          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,boost}.rb > .github/brew-formulae
       - name: Configure Homebrew cache
         uses: actions/cache@v2
         with:
@@ -23,11 +23,9 @@ jobs:
             ~/Library/Caches/Homebrew/gnu-sed--*
             ~/Library/Caches/Homebrew/coreutils--*
             ~/Library/Caches/Homebrew/boost--*
-            ~/Library/Caches/Homebrew/llvm--*
             ~/Library/Caches/Homebrew/downloads/*--gnu-sed-*
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
-            ~/Library/Caches/Homebrew/downloads/*--llvm-*
           key: brew-${{ hashFiles('.github/brew-formulae') }}
           restore-keys: brew-
 
@@ -41,7 +39,6 @@ jobs:
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD | tee REVIEWER_VER
 
           brew install gnu-sed coreutils boost
-          brew upgrade llvm
 
           node --version
           yarn --version
