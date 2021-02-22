@@ -98,6 +98,8 @@ jobs:
         run: |
           source env.sh
           cd akochan-reviewer
+          file target/release/akochan-reviewer
+          otool -L target/release/akochan-reviewer
           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
       - name: Compress report
