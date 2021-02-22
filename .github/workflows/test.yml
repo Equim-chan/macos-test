@@ -15,16 +15,18 @@ jobs:
       - name: Update Homebrew
         run: |
           brew update --preinstall
-          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,boost}.rb > .github/brew-formulae
+          cat "$(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/"{gnu-sed,coreutils,tar,boost}.rb > .github/brew-formulae
       - name: Configure Homebrew cache
         uses: actions/cache@v2
         with:
           path: |
             ~/Library/Caches/Homebrew/gnu-sed--*
             ~/Library/Caches/Homebrew/coreutils--*
+            ~/Library/Caches/Homebrew/tar--*
             ~/Library/Caches/Homebrew/boost--*
             ~/Library/Caches/Homebrew/downloads/*--gnu-sed-*
             ~/Library/Caches/Homebrew/downloads/*--coreutils-*
+            ~/Library/Caches/Homebrew/downloads/*--tar-*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
           key: brew-${{ hashFiles('.github/brew-formulae') }}
           restore-keys: brew-
@@ -47,7 +49,7 @@ jobs:
           git clone --depth=1 https://github.com/Equim-chan/akochan-reviewer.git
           git --git-dir=akochan-reviewer/.git rev-parse --short HEAD | tee REVIEWER_VER
 
-          brew install gnu-sed coreutils boost
+          brew install gnu-sed coreutils tar boost
 
           node --version
           yarn --version
@@ -55,6 +57,14 @@ jobs:
 
           sysctl -a | grep machdep.cpu
           vm_stat
+
+          rustup toolchain update --no-self-update stable
+          rustup default stable
+          rustup show
+
+          # macos tar is buggy and will cause problem for cache
+          sudo rm /usr/bin/tar
+          sudo ln -sf /usr/local/opt/gnu-tar/libexec/gnubin/tar /usr/bin/tar
 
           rustc --version | tee RUSTC_VER
           /usr/local/opt/llvm/bin/clang++ -E - -march=native -###
@@ -66,7 +76,7 @@ jobs:
         with:
           path: akochan
           # change it manually when needed
-          key: ${{ runner.os }}-akochan-3-${{ hashFiles('NPROC', 'AKOCHAN_VER') }}
+          key: ${{ runner.os }}-akochan-4-${{ hashFiles('NPROC', 'AKOCHAN_VER') }}
       - name: Cache akochan-reviewer
         id: cache-akochan-reviewer
         uses: actions/cache@v2
@@ -78,10 +88,10 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
           # change it manually when needed
-          key: ${{ runner.os }}-cargo-10-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-11-${{ hashFiles('RUSTC_VER') }}-${{ hashFiles('akochan-reviewer/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-10-${{ hashFiles('RUSTC_VER') }}-
-            ${{ runner.os }}-cargo-10-
+            ${{ runner.os }}-cargo-11-${{ hashFiles('RUSTC_VER') }}-
+            ${{ runner.os }}-cargo-11-
 
       - name: Build akochan
         if: steps.cache-akochan.outputs.cache-hit != 'true'
@@ -93,44 +103,39 @@ jobs:
             akochan/Makefile_MacOS akochan/ai_src/Makefile_MacOS
           make -C akochan/ai_src -j$(gnproc) -f Makefile_MacOS
           make -C akochan -j$(gnproc) -f Makefile_MacOS
-          otool -L akochan/{system.exe,libai.so}
 
       - name: Build akochan-reviewer
-#         if: steps.cache-akochan-reviewer.outputs.cache-hit != 'true'
-#         env:
-#           RUSTFLAGS: -C target-cpu=native
+        env:
+          RUSTFLAGS: -C target-cpu=native
         run: |
           cd akochan-reviewer
           cargo build --release
-          file target/release/akochan-reviewer
-          du -s target/release/akochan-reviewer
-          otool -L target/release/akochan-reviewer
 
-      - name: Run akochan-reviewer
-        run: |
-          source env.sh
-          cd akochan-reviewer
-          target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
+#       - name: Run akochan-reviewer
+#         run: |
+#           source env.sh
+#           cd akochan-reviewer
+#           target/release/akochan-reviewer -d ../akochan --no-open -o ../report.html "${ARGS[@]}"
 
-      - name: Compress report
-        run: |
-          source env.sh
-          "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
-            --collapse-whitespace \
-            --collapse-boolean-attributes \
-            --remove-optional-tags \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --remove-attribute-quotes \
-            --use-short-doctype \
-            --minify-css true \
-            --sort-attributes \
-            --sort-class-name \
-            report.html
+#       - name: Compress report
+#         run: |
+#           source env.sh
+#           "$(yarn global bin)"/html-minifier -o "$OUTPUT" \
+#             --collapse-whitespace \
+#             --collapse-boolean-attributes \
+#             --remove-optional-tags \
+#             --remove-redundant-attributes \
+#             --remove-script-type-attributes \
+#             --remove-attribute-quotes \
+#             --use-short-doctype \
+#             --minify-css true \
+#             --sort-attributes \
+#             --sort-class-name \
+#             report.html
 
-      - name: Publish report
-        env:
-          ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
-        run: |
-          source env.sh
-          curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
+#       - name: Publish report
+#         env:
+#           ARDW_TOKEN: ${{ secrets.ARDW_TOKEN }}
+#         run: |
+#           source env.sh
+#           curl -X POST -F "report=@$OUTPUT" -H "X-ARDW-Token: $ARDW_TOKEN" https://akochan.ekyu.moe/internal/submit-from-gh
